@@ -1,6 +1,5 @@
 const gulp = require("gulp");
-const sass = require("gulp-sass");
-sass.compilter = require("sass");
+const sass = require("gulp-sass")(require("sass"));
 const htmlMin = require("gulp-htmlmin");
 const cleanCSS = require("gulp-clean-css");
 const browserSync = require("browser-sync");
@@ -17,7 +16,15 @@ const minifyHTML = () => {
         removeComments: true,
       })
     )
-    .pipe(gulp.dest(".dist/"));
+    .pipe(gulp.dest("./dist/")); // i initially had .pipe(gulp.dest(".dist/")); which is incorrect
+};
+
+const copyImages = () => {
+  return gulp.src("./src/images/*").pipe(gulp.dest("./dist/images/"));
+};
+
+const copyIcons = () => {
+  return gulp.src("./src/icons/*").pipe(gulp.dest("./dist/icons/"));
 };
 
 const style = () => {
@@ -26,7 +33,7 @@ const style = () => {
     .pipe(sass().on("error", sass.logError))
     .pipe(cleanCSS())
     .pipe(gulp.dest("./dist/css/"))
-    .pipe(browswerSync.stream());
+    .pipe(browserSync.stream());
 };
 
 const configureJS = () => {
@@ -55,8 +62,10 @@ const watch = () => {
   gulp.watch("./src/js/app.js").on("change", browserSync.reload);
 };
 
-exports.default = gulp.series(gulp.parallel(minifyHTML, style, configureJS), watch);
+exports.default = gulp.series(gulp.parallel(minifyHTML, copyImages, copyIcons, style, configureJS), watch);
 exports.minifyHTML = minifyHTML;
+exports.copyImages = copyImages;
+exports.copyIcons = copyIcons;
 exports.style = style;
 exports.configureJS = configureJS;
 exports.watch = watch;
