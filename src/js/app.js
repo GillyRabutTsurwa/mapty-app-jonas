@@ -27,12 +27,26 @@ const inputElevation = document.querySelector(".form__input--elevation");
 if (navigator.geolocation) {
   navigator.geolocation.getCurrentPosition(
     (position) => {
-      console.log(position);
-
       const { latitude, longitude } = position.coords;
-      console.log(`La latitude c'est ${latitude}`);
-      console.log(`La longitude c'est ${longitude}`);
-      console.log(`https://www.google.pt/maps/@${latitude},${longitude}`);
+
+      const coordinates = [latitude, longitude];
+      // NOTE: this value was originally in the setView method, but i'm putting it in a variable for more clarity. change it to play around with it
+      const zoomLevel = 13;
+
+      // NOTE: it seems this is the entry point of rendering the map
+      const map = L.map("map").setView(coordinates, zoomLevel); // ("map") signifie un element dans notre HTML ayant le ID de "map"
+
+      /**
+       * NOTE:
+       * tile layers affecct the appearance of the map
+       * apparently there's all sorts and are customisable by simply changing the url (1st parametre of the tileLayer())
+       */
+      L.tileLayer("https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);
+
+      // NOTE: and this displays the map marker
+      L.marker(coordinates).addTo(map).bindPopup("A pretty CSS3 popup.<br> Easily customizable.").openPopup();
     },
     () => {
       alert("Could not get your position");
