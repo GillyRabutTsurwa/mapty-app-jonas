@@ -18,3 +18,13 @@
   - customise the marker, with its many options (via making an object)
   - how to set custom text
   - and, how to add our custom css classes to the marker
+
+## 4. Rendering Input Form
+  
+- in this commit, the goal was to render the input and start implementing standard functionality
+- what the form does so far:
+  - displayed the form
+  - placing a marker and clearing the input values after submitting the form
+  - when the select option changes from "running" to "cycling", the cadence input changes to the elevation input
+    - we are doing this using the closest(). i need to look into this method more. it seems to be very useful
+  
