@@ -28,3 +28,10 @@
   - when the select option changes from "running" to "cycling", the cadence input changes to the elevation input
     - we are doing this using the closest(). i need to look into this method more. it seems to be very useful
   
+## 5. Managing Data With Classes
+
+- using the OOP model to restructure our project
+- the App class is responsible for the model that our code is structured; properties, methods etc
+- and the app object, which is an instantiation of the App class is the entry point of our application
+- there are some very important notes in the javascript file regarding the bind(), the this keyword, and arrow functions
+- i will make another commit which will be a slight tweak of this one, but mostly similar

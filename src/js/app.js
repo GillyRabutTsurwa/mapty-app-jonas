@@ -1,7 +1,6 @@
 "use-strict";
 
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
 const DOMElements = (() => {
   const elements = {
     form: document.querySelector(".form"),
@@ -15,85 +14,109 @@ const DOMElements = (() => {
   return elements;
 })();
 
-// NOTE: these two variables were created so to address scope issues of some of the values we need to use externally
-let map;
-let mapEvt;
+class App {
+  #map;
+  #mapEvt;
 
-if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      const { latitude, longitude } = position.coords;
+  constructor() {
+    this._getPosition();
 
-      const coordinates = [latitude, longitude];
-      const zoomLevel = 13;
+    /**
+     * IMPORTANTNOTE:
+     * remember, for an event listener, by default, the this keyword is set to the DOM element itself - in the form of an object
+     * in this case, the this keyword would naturally be form. but we don't want this
+     * we want the this keyword to equal the object that our class creates
+     * there are two ways to solve this:
+     *
+     * the first way, which Jonas does, is to bind the this keyword to the eventlistener newWorkout callback function:
+     * DOMElements.form.addEventListener("submit", this._newWorkout.bind(this)
+     * this way, the this keyword of the function will be set to the current object being instantiated
+     *
+     * the other way, which is what i am doing, is to use an arrow function instead of a regular function as the event callback function
+     * and then call the newWorkout function from inside that callback function
+     * this works because in javascript, the value of this, for an arrow function, equals undefined in and of itself...
+     * ...but if there is a parent object in which the function is defined, the result of the this keyword will be that object
+     *
+     * i have decided that in the next commit, i will switch all the code that uses the arrow function method (No Pun Intended)...
+     * ... and switch it to the binding method; the way Jonas does it.
+     *
+     */
+    DOMElements.form.addEventListener("submit", (e) => {
+      this._newWorkout(e);
+    });
 
-      // NOTE: this used to be a const, but changed it to a redeclarable variable to use outside it's initial scope
-      map = L.map("map").setView(coordinates, zoomLevel);
+    DOMElements.inputType.addEventListener("change", () => {
+      this._toggleElevationField();
+    });
+  }
 
-      L.tileLayer("https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(map);
-
-      map.on("click", (mapEvent) => {
-        /**
-         * NOTE:
-         * we are assigning the mapEvent object to a variable in order to use outside this scope
-         * secondly, we are removing the default "hidden" class from the form to display it
-         * lastly, we are putting the focus on the distance field as soon as the form is displayed
-         */
-        mapEvt = mapEvent;
-        DOMElements.form.classList.remove("hidden");
-        DOMElements.inputDistance.focus();
+  _getPosition() {
+    if (navigator.geolocation) {
+      // NOTE: actually, i believe the binding/arrow function concept applies here as well
+      navigator.geolocation.getCurrentPosition(this._loadMap.bind(this), () => {
+        alert("Could not get your position");
       });
-    },
-    () => {
-      alert("Could not get your position");
     }
-  );
+  }
+
+  _loadMap(position) {
+    const { latitude, longitude } = position.coords;
+
+    const coordinates = [latitude, longitude];
+    const zoomLevel = 13;
+
+    console.log(this);
+    this.#map = L.map("map").setView(coordinates, zoomLevel);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(this.#map);
+
+    //NOTE: look at the detailed comment above related to the form event listener. same applies here
+    this.#map.on("click", (mapEvent) => {
+      this._showForm(mapEvent);
+    });
+  }
+
+  _showForm(mapEvent) {
+    this.#mapEvt = mapEvent;
+    DOMElements.form.classList.remove("hidden");
+    DOMElements.inputDistance.focus();
+  }
+
+  _toggleElevationField() {
+    DOMElements.inputElevation.closest(".form__row").classList.toggle("form__row--hidden");
+    DOMElements.inputCadence.closest(".form__row").classList.toggle("form__row--hidden");
+  }
+
+  _newWorkout(e) {
+    console.log(this);
+    e.preventDefault();
+
+    const inputFormsArr = Object.values(DOMElements).filter((currentDOMElement) => {
+      return currentDOMElement.className.includes("form__input");
+    });
+
+    console.log(inputFormsArr);
+    inputFormsArr.forEach((currentInputElement) => {
+      currentInputElement.value = "";
+    });
+
+    const { lat, lng } = this.#mapEvt.latlng;
+    L.marker([lat, lng])
+      .addTo(this.#map)
+      .bindPopup(
+        L.popup({
+          maxWidth: 250,
+          minWidth: 100,
+          autoClose: false,
+          closeOnClick: false,
+          className: "running-popup",
+        })
+      )
+      .setPopupContent("Custom Tings Settings")
+      .openPopup();
+  }
 }
 
-DOMElements.form.addEventListener("submit", (e) => {
-  // NOTE: stop default form behaviour
-  e.preventDefault();
-
-  // NOTE: display the marker
-  const { lat, lng } = mapEvt.latlng;
-  L.marker([lat, lng])
-    .addTo(map)
-    .bindPopup(
-      L.popup({
-        maxWidth: 250,
-        minWidth: 100,
-        autoClose: false,
-        closeOnClick: false,
-        className: "running-popup",
-      })
-    )
-    .setPopupContent("Custom Tings Settings")
-    .openPopup();
-
-  /**
-   * NOTE:
-   * clear all values of the input
-   * first filter the dom to get only input elements
-   * then loop over all the input elements
-   * and clear their values
-   * differement par a rapport au moyen de Jonas
-   */
-  const inputFormsArr = Object.values(DOMElements).filter((currentDOMElement) => {
-    return currentDOMElement.className.includes("form__input");
-  });
-
-  console.log(inputFormsArr);
-  inputFormsArr.forEach((currentInputElement) => {
-    currentInputElement.value = "";
-  });
-});
-
-// input select change event
-DOMElements.inputType.addEventListener("change", (e) => {
-  console.log(e.target.value); // just looking around
-  // NOTENEW: the closest() like an inverse query selector; selects PARENTS and not children
-  DOMElements.inputElevation.closest(".form__row").classList.toggle("form__row--hidden");
-  DOMElements.inputCadence.closest(".form__row").classList.toggle("form__row--hidden");
-});
+const app = new App();

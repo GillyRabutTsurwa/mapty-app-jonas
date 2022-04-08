@@ -2,7 +2,8 @@ const gulp = require("gulp");
 const sass = require("gulp-sass")(require("sass"));
 const htmlMin = require("gulp-htmlmin");
 const cleanCSS = require("gulp-clean-css");
-const browserSync = require("browser-sync");
+const rename = require("gulp-rename");
+const browserSync = require("browser-sync").create();
 
 const babel = require("gulp-babel");
 const terser = require("gulp-terser");
@@ -44,8 +45,18 @@ const configureJS = () => {
         presets: ["@babel/preset-env"],
       })
     )
-    .pipe(terser())
+    .pipe(
+      terser({
+        compress: {
+          drop_console: true,
+        },
+      })
+    )
     .pipe(gulp.dest("./dist/js/"));
+};
+
+const copyJS = () => {
+  return gulp.src("./src/js/**/*.js").pipe(rename("app.test.js")).pipe(gulp.dest("./dist/js/"));
 };
 
 const watch = () => {
@@ -56,16 +67,17 @@ const watch = () => {
     browser: "chrome",
   });
 
-  gulp.watch(["./src/*.html", "./src/sass/**/*.scss", "./src/js/app.js"], gulp.parallel(minifyHTML, style, configureJS));
+  gulp.watch(["./src/*.html", "./src/sass/**/*.scss", "./src/js/app.js"], gulp.parallel(minifyHTML, style, configureJS, copyJS));
 
   gulp.watch("./src/*.html").on("change", browserSync.reload);
   gulp.watch("./src/js/app.js").on("change", browserSync.reload);
 };
 
-exports.default = gulp.series(gulp.parallel(minifyHTML, copyImages, copyIcons, style, configureJS), watch);
+exports.default = gulp.series(gulp.parallel(minifyHTML, style, configureJS), watch);
 exports.minifyHTML = minifyHTML;
 exports.copyImages = copyImages;
 exports.copyIcons = copyIcons;
 exports.style = style;
 exports.configureJS = configureJS;
+exports.copyJS = copyJS;
 exports.watch = watch;
