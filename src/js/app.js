@@ -1,6 +1,7 @@
 "use-strict";
 
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
 const DOMElements = (() => {
   const elements = {
     form: document.querySelector(".form"),
@@ -19,40 +20,34 @@ class App {
   #mapEvt;
 
   constructor() {
-    this._getPosition();
-
     /**
      * IMPORTANTNOTE:
+     * this note is intentionally left from the previous commit, but moving it to the top of the getPosition() for better code readability:
+     *
      * remember, for an event listener, by default, the this keyword is set to the DOM element itself - in the form of an object
      * in this case, the this keyword would naturally be form. but we don't want this
      * we want the this keyword to equal the object that our class creates
      * there are two ways to solve this:
      *
-     * the first way, which Jonas does, is to bind the this keyword to the eventlistener newWorkout callback function:
+     * the first way, which Jonas does, AND what i will do in this commit, is to bind the this keyword to the eventlistener newWorkout callback function:
      * DOMElements.form.addEventListener("submit", this._newWorkout.bind(this)
      * this way, the this keyword of the function will be set to the current object being instantiated
      *
-     * the other way, which is what i am doing, is to use an arrow function instead of a regular function as the event callback function
+     * the other way, which is what i did in the previous commit, is to use an arrow function instead of a regular function as the event callback function
      * and then call the newWorkout function from inside that callback function
      * this works because in javascript, the value of this, for an arrow function, equals undefined in and of itself...
      * ...but if there is a parent object in which the function is defined, the result of the this keyword will be that object
      *
-     * i have decided that in the next commit, i will switch all the code that uses the arrow function method (No Pun Intended)...
-     * ... and switch it to the binding method; the way Jonas does it.
+     * in the previous commit, i make use of arrow functions instead of using the .bind()
      *
      */
-    DOMElements.form.addEventListener("submit", (e) => {
-      this._newWorkout(e);
-    });
-
-    DOMElements.inputType.addEventListener("change", () => {
-      this._toggleElevationField();
-    });
+    this._getPosition();
+    DOMElements.form.addEventListener("submit", this._newWorkout.bind(this));
+    DOMElements.inputType.addEventListener("change", this._toggleElevationField);
   }
 
   _getPosition() {
     if (navigator.geolocation) {
-      // NOTE: actually, i believe the binding/arrow function concept applies here as well
       navigator.geolocation.getCurrentPosition(this._loadMap.bind(this), () => {
         alert("Could not get your position");
       });
@@ -72,10 +67,7 @@ class App {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(this.#map);
 
-    //NOTE: look at the detailed comment above related to the form event listener. same applies here
-    this.#map.on("click", (mapEvent) => {
-      this._showForm(mapEvent);
-    });
+    this.#map.on("click", this._showForm.bind(this));
   }
 
   _showForm(mapEvent) {

@@ -30,8 +30,11 @@
   
 ## 5. Managing Data With Classes
 
-- using the OOP model to restructure our project
-- the App class is responsible for the model that our code is structured; properties, methods etc
-- and the app object, which is an instantiation of the App class is the entry point of our application
-- there are some very important notes in the javascript file regarding the bind(), the this keyword, and arrow functions
-- i will make another commit which will be a slight tweak of this one, but mostly similar
+- this commit is a slight tweak of the previous one
+- the tweak: i use .bind() instead of using arrow functions
+- consult previous commit for more info
+- also (and this is IMPORTANT) i have changed the gulp workflow once again:
+  - instead of using the copyJS function from the previous commit, i am using [gulp-mode](https://www.npmjs.com/package/gulp-mode) to run certain gulp actions depending on the environment (development or production)
+  - this [article](https://www.boag.online/blog/gulp-2021) was very helpful for me
+  - this is the most important thing (arguably) that I did in this commit
+  - i have more comments in the app.js file
