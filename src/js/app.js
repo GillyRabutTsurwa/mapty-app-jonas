@@ -15,32 +15,59 @@ const DOMElements = (() => {
   return elements;
 })();
 
+class Workout {
+  /**
+   * TODOIMPORTANT:
+   * i knew this look weird (declaring these variables here)
+   * jonas calls it "cutting edge javascript"
+   * i need to look into this, because last time i checked this wasn't allowed in javascript
+   */
+  date = new Date();
+  id = `${Date.now()} `.slice(-10);
+
+  constructor(coords, distance, duration) {
+    this.coords = coords; // array of latitude and longitude
+    this.distance = distance; // in km
+    this.duration = duration; // in m
+  }
+}
+
+// subclasses to Workout class
+class Running extends Workout {
+  constructor(coords, distance, duration, cadence) {
+    super(coords, distance, duration);
+    this.cadence = cadence;
+    this.calculatePace();
+  }
+
+  calculatePace() {
+    this.pace = this.duration / this.distance;
+  }
+}
+
+// subclasses to Workout class
+class Cycling extends Workout {
+  constructor(coords, distance, duration, elevationGain) {
+    super(coords, distance, duration);
+    this.elevationGain = elevationGain;
+    this.calculateSpeed();
+  }
+
+  calculateSpeed() {
+    this.speed = this.distance / (this.duration / 60);
+  }
+}
+
+const runOne = new Running([39, -12], 5.2, 24, 178);
+const cycleOne = new Cycling([39, -12], 27, 95, 528);
+
+console.log(runOne, cycleOne);
+
 class App {
   #map;
   #mapEvt;
 
   constructor() {
-    /**
-     * IMPORTANTNOTE:
-     * this note is intentionally left from the previous commit, but moving it to the top of the getPosition() for better code readability:
-     *
-     * remember, for an event listener, by default, the this keyword is set to the DOM element itself - in the form of an object
-     * in this case, the this keyword would naturally be form. but we don't want this
-     * we want the this keyword to equal the object that our class creates
-     * there are two ways to solve this:
-     *
-     * the first way, which Jonas does, AND what i will do in this commit, is to bind the this keyword to the eventlistener newWorkout callback function:
-     * DOMElements.form.addEventListener("submit", this._newWorkout.bind(this)
-     * this way, the this keyword of the function will be set to the current object being instantiated
-     *
-     * the other way, which is what i did in the previous commit, is to use an arrow function instead of a regular function as the event callback function
-     * and then call the newWorkout function from inside that callback function
-     * this works because in javascript, the value of this, for an arrow function, equals undefined in and of itself...
-     * ...but if there is a parent object in which the function is defined, the result of the this keyword will be that object
-     *
-     * in the previous commit, i make use of arrow functions instead of using the .bind()
-     *
-     */
     this._getPosition();
     DOMElements.form.addEventListener("submit", this._newWorkout.bind(this));
     DOMElements.inputType.addEventListener("change", this._toggleElevationField);

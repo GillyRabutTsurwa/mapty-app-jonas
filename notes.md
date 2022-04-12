@@ -38,3 +38,11 @@
   - this [article](https://www.boag.online/blog/gulp-2021) was very helpful for me
   - this is the most important thing (arguably) that I did in this commit
   - i have more comments in the app.js file
+
+## 6. Managing Data With Classes & Refactoring Project Structure (Complete)
+
+- in this commit, the workout class, as well as the running and cycling subclasses (derived from the workout class) were created
+- also tested our sub classes by instantiating objects and inspecting their data
+- this is the data that we will eventually use to create a new workout
+- only, instead of fixed numbers, the values will come from our form
+- on avance, plus à venir
