@@ -1,5 +1,9 @@
 const gulp = require("gulp");
-const mode = require("gulp-mode")();
+const mode = require("gulp-mode")({
+  modes: ["production", "development"],
+  default: "development",
+  verbose: false,
+});
 const sass = require("gulp-sass")(require("sass"));
 const browserSync = require("browser-sync").create();
 
@@ -8,14 +12,16 @@ const cleanCSS = require("gulp-clean-css");
 const babel = require("gulp-babel");
 const terser = require("gulp-terser");
 
-const minifyHTML = () => {
+const html = () => {
   return gulp
     .src("./src/*.html")
     .pipe(
-      htmlMin({
-        collapseWhitespace: true,
-        removeComments: true,
-      })
+      mode.production(
+        htmlMin({
+          collapseWhitespace: true,
+          removeComments: true,
+        })
+      )
     )
     .pipe(gulp.dest("./dist/"));
 };
@@ -32,7 +38,7 @@ const style = () => {
   return gulp
     .src("./src/sass/**/*.scss")
     .pipe(sass().on("error", sass.logError))
-    .pipe(cleanCSS())
+    .pipe(mode.production(cleanCSS()))
     .pipe(gulp.dest("./dist/css/"))
     .pipe(browserSync.stream());
 };
@@ -54,7 +60,7 @@ const style = () => {
  * this reminds me of colt's webpack crash course, when we wanted certain code to run in development or production
  * @returns
  */
-const configureJS = () => {
+const javascript = () => {
   return gulp
     .src("./src/js/**/*.js")
     .pipe(
@@ -64,15 +70,7 @@ const configureJS = () => {
         })
       )
     )
-    .pipe(
-      mode.production(
-        terser({
-          compress: {
-            drop_console: true,
-          },
-        })
-      )
-    )
+    .pipe(mode.production(terser()))
     .pipe(gulp.dest("./dist/js/"));
 };
 
@@ -84,16 +82,16 @@ const watch = () => {
     browser: "google chrome",
   });
 
-  gulp.watch(["./src/*.html", "./src/sass/**/*.scss", "./src/js/app.js"], gulp.parallel(minifyHTML, style, configureJS));
+  gulp.watch(["./src/*.html", "./src/sass/**/*.scss", "./src/**/*.js"], gulp.parallel(html, style, javascript));
 
   gulp.watch("./src/*.html").on("change", browserSync.reload);
   gulp.watch("./src/js/app.js").on("change", browserSync.reload);
 };
 
-exports.default = gulp.series(gulp.parallel(minifyHTML, style, configureJS), watch);
-exports.minifyHTML = minifyHTML;
+exports.default = gulp.series(gulp.parallel(html, style, javascript), watch);
+exports.html = html;
 exports.copyImages = copyImages;
 exports.copyIcons = copyIcons;
 exports.style = style;
-exports.configureJS = configureJS;
+exports.javascript = javascript;
 exports.watch = watch;

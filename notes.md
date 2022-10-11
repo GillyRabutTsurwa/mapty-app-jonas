@@ -14,7 +14,7 @@
 
 ## 3. Displaying the Map Marker (Upon Click)
 
-- went through the leaflet documentation and eventually learnt how to: 
+- went through the leaflet documentation and eventually learnt how to:
   - customise the marker, with its many options (via making an object)
   - how to set custom text
   - and, how to add our custom css classes to the marker
@@ -46,3 +46,14 @@
 - this is the data that we will eventually use to create a new workout
 - only, instead of fixed numbers, the values will come from our form
 - on avance, plus à venir
+  
+## 7. Creating A Workout 
+
+- it has been a very long time, but we go again
+- this commits takes the first steps of taking a workout and displaying them in the DOM 
+- basically, i am making objects based on the type of workout; running or cycling
+  - the bulk of javascript code for this commit, has to do with this specific task 
+- also, i moved the code that renders the map to its own function
+  - adjusting of variables, parametres, etc was needed because of scope
+- i also coded the error handling for bad form inputs
+- had a much needed refresher on ```gulp-mode```

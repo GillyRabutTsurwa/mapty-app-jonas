@@ -16,23 +16,16 @@ const DOMElements = (() => {
 })();
 
 class Workout {
-  /**
-   * TODOIMPORTANT:
-   * i knew this look weird (declaring these variables here)
-   * jonas calls it "cutting edge javascript"
-   * i need to look into this, because last time i checked this wasn't allowed in javascript
-   */
   date = new Date();
-  id = `${Date.now()} `.slice(-10);
+  id = `${Date.now()}`.slice(-10);
 
   constructor(coords, distance, duration) {
     this.coords = coords; // array of latitude and longitude
     this.distance = distance; // in km
-    this.duration = duration; // in m
+    this.duration = duration; // in min
   }
 }
 
-// subclasses to Workout class
 class Running extends Workout {
   constructor(coords, distance, duration, cadence) {
     super(coords, distance, duration);
@@ -45,7 +38,6 @@ class Running extends Workout {
   }
 }
 
-// subclasses to Workout class
 class Cycling extends Workout {
   constructor(coords, distance, duration, elevationGain) {
     super(coords, distance, duration);
@@ -66,6 +58,7 @@ console.log(runOne, cycleOne);
 class App {
   #map;
   #mapEvt;
+  #workoutsArr = [];
 
   constructor() {
     this._getPosition();
@@ -109,20 +102,83 @@ class App {
   }
 
   _newWorkout(e) {
-    console.log(this);
     e.preventDefault();
+    /**
+     * TODO:
+     * 1. get data from form
+     * 2. validate data
+     *  a. if workout is running, create running object
+     *  b. if workout is cycling, create cycling object
+     * 3. add new object to object array
+     * 4. render workout on map as a marker
+     * 5. render workout on list
+     * 6. clear input fields
+     * 7. hide form
+     */
+
+    // 1.
+    const type = DOMElements.inputType.value;
+    const distance = +DOMElements.inputDistance.value; //NOTE: the "+" est pour convertir la chaîne à un chiffre
+    const duration = +DOMElements.inputDuration.value; //NOTE: c'est le pareil ici
+    const { lat, lng } = this.#mapEvt.latlng;
+    let workout;
+
+    // 2.
+    /**
+     * NOTE:
+     * helper function to help validate inputs
+     * first one to validate if inputs are actually numbers
+     * second to validate if the numbers are positive numbers
+     * this works fine, but reading the lines where we invoke the functions is a bit confusing to me
+     * i am considering switching from every() to some()
+     * which will then get rid of "!" during the function calls
+     */
+    const validateInputs = (...inputs) => inputs.every((currentInput) => Number.isFinite(currentInput));
+    const allPositiveNums = (...inputs) => inputs.every((currentInput) => currentInput > 0);
+
+    if (type === "running") {
+      const cadence = +DOMElements.inputCadence.value;
+      // a.
+
+      // if (!Number.isFinite(distance) || !Number.isFinite(duration) || !Number.isFinite(cadence)) return alert("Inputs must be positive numbers");
+      // the above is good and works, but is very long winded. much below is much preferable. commenting out above
+      if (!validateInputs(distance, duration, cadence) || !allPositiveNums(distance, duration, cadence)) {
+        alert("Inputs must be positive numbers");
+        return;
+      }
+
+      workout = new Running([lat, lng], distance, duration, cadence);
+      this.#workoutsArr.push(workout);
+    }
+
+    if (type === "cycling") {
+      const elevation = +DOMElements.inputElevation.value;
+      // b.
+      if (!validateInputs(distance, duration, elevation) || !allPositiveNums(distance, duration)) {
+        alert("Inputs must be positive numbers");
+        return;
+      }
+
+      workout = new Cycling([lat, lng], distance, duration, elevation);
+      this.#workoutsArr.push(workout); //TODO: essayer de bouger ce ligne hors du bloque "if" juste dessous
+    }
+
+    console.log(this.#workoutsArr);
+
+    this.renderWorkoutMarker(workout);
 
     const inputFormsArr = Object.values(DOMElements).filter((currentDOMElement) => {
       return currentDOMElement.className.includes("form__input");
     });
 
-    console.log(inputFormsArr);
     inputFormsArr.forEach((currentInputElement) => {
       currentInputElement.value = "";
     });
+  }
 
-    const { lat, lng } = this.#mapEvt.latlng;
-    L.marker([lat, lng])
+  renderWorkoutMarker(workout) {
+    // const { lat, lng } = this.#mapEvt.latlng; NOTE: moving this to the top so it can be use to add a new workout
+    L.marker(workout.coords) //NOTE: workout.coords has the lat and lng values that we need
       .addTo(this.#map)
       .bindPopup(
         L.popup({
@@ -130,10 +186,10 @@ class App {
           minWidth: 100,
           autoClose: false,
           closeOnClick: false,
-          className: "running-popup",
+          className: `${type}-popup`, //NOTE: based on the value of the select input: running or cycling
         })
       )
-      .setPopupContent("Custom Tings Settings")
+      .setPopupContent(`TEST: ${workout.distance}`)
       .openPopup();
   }
 }
