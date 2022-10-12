@@ -58,7 +58,12 @@ const style = () => {
  * the script to run gulp is development is "gulp --development" (though i think "gulp" by itself runs development by default)
  * and the script to run gulp in production is "gulp --production"
  * this reminds me of colt's webpack crash course, when we wanted certain code to run in development or production
- * @returns
+ *
+ * NEW: i'm not quite doing things as I describe in the first paragraph
+ * i am using one destination file (let's say the Javascript file), which I can alternate between development and production
+ * development is the default, but when the app is ready to deploy i will run gulp --production
+ *
+ * NOTE: you can run gulp on one task en either mode, e.g. gulp style --production will run the style task under the production mode settings
  */
 const javascript = () => {
   return gulp

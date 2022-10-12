@@ -57,3 +57,8 @@
   - adjusting of variables, parametres, etc was needed because of scope
 - i also coded the error handling for bad form inputs
 - had a much needed refresher on ```gulp-mode```
+
+## 8. Rendering Workouts
+
+- in this commmit, we are taking our collection (array) of workout objects and rendering them, as lists, to the DOM
+- the bulk of the code written in this function is found in the ```_renderWorkout()```
